@@ -12,6 +12,9 @@ module.exports = (app) => {
 
     app.get('/users/id/:userId', users.findId);
 
+    app.get('/users/gender/laki-laki', users.findGender);
+    app.get('/users/gender/perempuan', users.findGender2);
+
 
     // Login Email
     app.post('/userss/login', users.loginEmail);

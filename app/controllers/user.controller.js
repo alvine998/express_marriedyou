@@ -3,12 +3,6 @@ const bcrypt = require('bcryptjs');
 
 // Create and Save a new Note
 exports.create = (req, res) => {
-    // Validate request
-    if(!req.body.email) {
-        return res.status(400).send({
-            message: "User email can not be empty"
-        });
-    }
 
     // Create a Note
     const user = new User({
@@ -16,6 +10,7 @@ exports.create = (req, res) => {
         email: req.body.email,
         nohp: req.body.nohp,
         password: bcrypt.hashSync(req.body.password, 8),
+        jenis_kelamin: req.body.jenis_kelamin,
         hobi: "",
         alamat: "",
         usia: 0,
@@ -101,6 +96,30 @@ exports.findId = (req, res) => {
         });
     });
 };
+
+// Get Data dari Jenis Kelamin Laki-laki
+exports.findGender = (req,res) => {
+    User.find({jenis_kelamin: 'Laki-laki'})
+    .then(users => {
+        res.send(users);
+    }).catch(err => {
+        res.status(500).send({
+            message: err.message || "Some error occurred while retrieving users."
+        });
+    });
+}
+
+// Get Data dari Jenis Kelamin Perempuan
+exports.findGender2 = (req,res) => {
+    User.find({jenis_kelamin: 'Perempuan'})
+    .then(users => {
+        res.send(users);
+    }).catch(err => {
+        res.status(500).send({
+            message: err.message || "Some error occurred while retrieving users."
+        });
+    });
+}
 
 // Login
 exports.loginEmail = (req, res) => {
