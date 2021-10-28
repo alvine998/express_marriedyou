@@ -8,5 +8,8 @@ module.exports = (app) => {
     app.get('/chats', chats.findAll);
 
     // Retrieve a single Note with noteId
-    app.get('/chats/:emails', chats.findOne);
+    app.get('/chats/user/:userid', chats.findOneChat);
+
+    // Retrieve a single Note with noteId
+    app.get('/chats/:msgId', chats.findOne);
 }

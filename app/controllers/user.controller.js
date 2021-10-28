@@ -13,9 +13,10 @@ exports.create = (req, res) => {
         jenis_kelamin: req.body.jenis_kelamin,
         hobi: "",
         alamat: "",
-        usia: 0,
+        usia: req.body.usia,
         tentang:"",
-        image:"" 
+        image:"",
+        status:req.body.status 
     });
 
     bcrypt.genSalt(10,(err,salt) => {
@@ -51,6 +52,22 @@ exports.findAll = (req, res) => {
         });
     });
 };
+
+exports.search = async (req,res) => {
+    try{
+        const searchParams = req.query
+        console.log(searchParams)
+        const user = await User.find(searchParams)
+        if(!user){
+            throw Error('error, not found')
+        } else {
+            res.status(200).json(user)
+        }
+    } catch(err){
+        res.status(400).json({msg: err})
+    }
+    
+}
 
 // Find a single note with a noteId
 exports.findOne = (req, res) => {

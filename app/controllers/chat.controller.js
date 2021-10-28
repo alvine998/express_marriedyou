@@ -4,7 +4,9 @@ const Chat = require('../models/chat.model.js');
 exports.create = (req, res) => {
     // Create a Note
     const chat = new Chat({
-        msg: req.body.msg,  
+        msg: req.body.msg,
+        msg2: req.body.msg2,
+        userid: req.body.userid  
     });
 
     // Save Note in the database
@@ -48,6 +50,29 @@ exports.findOne = (req, res) => {
         }
         return res.status(500).send({
             message: "Error retrieving user with id " + req.params.msgId
+        });
+    });
+};
+
+// Find a single note with a noteId
+exports.findOneChat = (req, res) => {
+    const id = req.params.userid
+    Chat.find({"userid" : id})
+    .then(user => {
+        if(!user) {
+            return res.status(404).send({
+                message: "Email not found with id " + req.params.userid
+            });            
+        }
+        res.send(user);
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.userid
+            });                
+        }
+        return res.status(500).send({
+            message: "Error retrieving user with id " + req.params.userid
         });
     });
 };

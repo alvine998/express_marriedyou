@@ -1,5 +1,6 @@
 module.exports = (app) => {
     const users = require('../controllers/user.controller.js');
+    const cors = require('cors')
 
     // Create a new Note
     app.post('/users', users.create);
@@ -9,6 +10,9 @@ module.exports = (app) => {
 
     // Retrieve a single Note with noteId
     app.get('/users/:emails', users.findOne);
+
+    // Searching by name
+    app.get('/search', cors(), users.search)
 
     app.get('/users/id/:userId', users.findId);
 

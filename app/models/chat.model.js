@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
+const {ObjectId} = mongoose.Schema.Types;
 
 const ChatSchema = mongoose.Schema({
-    msg: String,
+    msg: Array,
+    msg2:Array,
+    userid: {type: ObjectId, ref:'user.model'},
 }, {
     timestamps: true
 });

@@ -10,7 +10,8 @@ const UserSchema = mongoose.Schema({
     alamat: String,
     usia: Number,
     tentang:String,
-    image:String
+    image:String,
+    status: String
 }, {
     timestamps: true
 });
