@@ -1,4 +1,5 @@
 const Chat = require('../models/chat.model.js');
+const mongoose = require('mongoose')
 
 // Create and Save a new Note
 exports.create = (req, res) => {
@@ -6,7 +7,8 @@ exports.create = (req, res) => {
     const chat = new Chat({
         msg: req.body.msg,
         msg2: req.body.msg2,
-        userid: req.body.userid  
+        userid: req.body.userid,
+        targetid: req.body.targetid    
     });
 
     // Save Note in the database
@@ -33,25 +35,66 @@ exports.findAll = (req, res) => {
 };
 
 // Find a single note with a noteId
-exports.findOne = (req, res) => {
-    Chat.findById(req.params.msgId)
-    .then(user => {
-        if(!user) {
-            return res.status(404).send({
-                message: "Email not found with id " + req.params.msgId
-            });            
+exports.findOne = async(req, res) => {
+    await Chat.aggregate(
+        [
+            {$match: {_id: mongoose.Types.ObjectId(req.params.msgId)}},
+            {
+                $lookup: {
+                    from: "customers",
+                    localField:"userid",
+                    foreignField: "_id",
+                    as : "users",
+                }
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField:"targetid",
+                    foreignField: "_id",
+                    as : "users_target",
+                }
+            },
+            {
+                $project :{
+                    userid: 0,
+                }
+            },
+            {
+                $project :{
+                    targetid: 0,
+                }
+            },
+            {$sort : {_id: 1}},
+        ],
+        [
+            {$match: {_id: mongoose.Types.ObjectId(req.params.msgId)}},
+            {
+                $lookup: {
+                    from: "customers",
+                    localField:"targetid",
+                    foreignField: "_id",
+                    as : "users_target",
+                },
+            },
+            {
+                $project :{
+                    targetid: 0,
+                },
+            },
+            {$sort : {_id: 1}},
+        ],
+        function (err,data){
+            if(err || data == null){
+                res.json({
+                    msg: "Gagal dapat data",
+                    err
+                });
+            } else {
+                res.json(data[0])
+            }
         }
-        res.send(user);
-    }).catch(err => {
-        if(err.kind === 'ObjectId') {
-            return res.status(404).send({
-                message: "User not found with id " + req.params.msgId
-            });                
-        }
-        return res.status(500).send({
-            message: "Error retrieving user with id " + req.params.msgId
-        });
-    });
+    )
 };
 
 // Find a single note with a noteId
@@ -98,3 +141,54 @@ exports.findOneChat = (req, res) => {
 //         });
 //     });
 // };
+
+// Update a note identified by the noteId in the request
+exports.update = (req, res) => {
+    // Find note and update it with the request body
+    Chat.findByIdAndUpdate(req.params.msgId,
+        // nama: req.body.nama, 
+        // email: req.body.email,
+        // nohp: req.body.nohp,
+        // password: bcrypt.hashSync(req.body.password, 8)
+        req.body 
+    , {new: true})
+    .then(user => {
+        if(!user) {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.msgId
+            });
+        }
+        res.send(user);
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.msgId
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating user with id " + req.params.msgId
+        });
+    });
+};
+
+// Delete a note with the specified noteId in the request
+exports.delete = (req, res) => {
+    Chat.findByIdAndRemove(req.params.msgId)
+    .then(user => {
+        if(!user) {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.msgId
+            });
+        }
+        res.send({message: "User deleted successfully!"});
+    }).catch(err => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.msgId
+            });                
+        }
+        return res.status(500).send({
+            message: "Could not delete user with id " + req.params.msgId
+        });
+    });
+};

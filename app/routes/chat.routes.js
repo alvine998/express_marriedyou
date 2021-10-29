@@ -12,4 +12,10 @@ module.exports = (app) => {
 
     // Retrieve a single Note with noteId
     app.get('/chats/:msgId', chats.findOne);
+
+    // Delete Chat
+    app.delete('/chats/:msgId', chats.delete)
+
+    // Update Chat
+    app.put('/chats/:msgId', chats.update)
 }
