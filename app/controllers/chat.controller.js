@@ -22,6 +22,21 @@ exports.create = (req, res) => {
     });
 };
 
+// Create and Save a new Note
+exports.createSend = async(req, res) => {
+    await Chat.findOneAndUpdate(
+        {$match: {_id: mongoose.Types.ObjectId(req.params.msgId)}},
+        {$push: {msg: req.body.msg}},
+        function (error, success){
+            if(error){
+                console.log(error);
+            } else {
+                console.log(success);
+            }
+        }
+    )
+};
+
 // Retrieve and return all notes from the database.
 exports.findAll = (req, res) => {
     Chat.find()
@@ -98,26 +113,67 @@ exports.findOne = async(req, res) => {
 };
 
 // Find a single note with a noteId
-exports.findOneChat = (req, res) => {
-    const id = req.params.userid
-    Chat.find({"userid" : id})
-    .then(user => {
-        if(!user) {
-            return res.status(404).send({
-                message: "Email not found with id " + req.params.userid
-            });            
+exports.findOneChat = async(req, res) => {
+
+    await Chat.aggregate(
+        [
+            {$match: {userid: mongoose.Types.ObjectId(req.params.userid)}},
+            {
+                $lookup: {
+                    from: "customers",
+                    localField:"userid",
+                    foreignField: "_id",
+                    as : "users",
+                }
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField:"targetid",
+                    foreignField: "_id",
+                    as : "users_target",
+                }
+            },
+            {
+                $project :{
+                    userid: 0,
+                }
+            },
+            {
+                $project :{
+                    targetid: 0,
+                }
+            },
+            {$sort : {userid: 1,createdAt:-1}},
+        ],
+        [
+            {$match: {userid: mongoose.Types.ObjectId(req.params.userid)}},
+            {
+                $lookup: {
+                    from: "customers",
+                    localField:"targetid",
+                    foreignField: "_id",
+                    as : "users_target",
+                },
+            },
+            {
+                $project :{
+                    targetid: 0,
+                },
+            },
+            {$sort : {userid: 1, createdAt:-1}},
+        ],
+        function (err,data){
+            if(err || data == null){
+                res.json({
+                    msg: "Gagal dapat data",
+                    err
+                });
+            } else {
+                res.json(data)
+            }
         }
-        res.send(user);
-    }).catch(err => {
-        if(err.kind === 'ObjectId') {
-            return res.status(404).send({
-                message: "User not found with id " + req.params.userid
-            });                
-        }
-        return res.status(500).send({
-            message: "Error retrieving user with id " + req.params.userid
-        });
-    });
+    )
 };
 
 // // Find a single note with a noteId

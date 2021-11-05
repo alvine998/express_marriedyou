@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const {ObjectId} = mongoose.Schema.Types;
 
 const ChatSchema = mongoose.Schema({
-    msg: Array,
-    msg2:Array,
+    msg: [String],
+    msg2: [String],
     userid: {type: ObjectId, ref:'user.model'},
     targetid: {type: ObjectId, ref:'user.model'}
 }, {

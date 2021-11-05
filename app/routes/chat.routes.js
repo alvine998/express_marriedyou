@@ -4,6 +4,8 @@ module.exports = (app) => {
     // Create a new Note
     app.post('/chats', chats.create);
 
+    app.put('/chatsend/:msgId', chats.createSend);
+
     // Retrieve all chats
     app.get('/chats', chats.findAll);
 
