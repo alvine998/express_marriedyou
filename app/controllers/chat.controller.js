@@ -8,7 +8,8 @@ exports.create = (req, res) => {
         msg: req.body.msg,
         msg2: req.body.msg2,
         userid: req.body.userid,
-        targetid: req.body.targetid    
+        targetid: req.body.targetid,
+        detchatid: req.body.targetid        
     });
 
     // Save Note in the database
@@ -24,17 +25,31 @@ exports.create = (req, res) => {
 
 // Create and Save a new Note
 exports.createSend = async(req, res) => {
-    await Chat.findOneAndUpdate(
-        {$match: {_id: mongoose.Types.ObjectId(req.params.msgId)}},
-        {$push: {msg: req.body.msg}},
-        function (error, success){
-            if(error){
-                console.log(error);
-            } else {
-                console.log(success);
-            }
+    Chat.findByIdAndUpdate(req.params.msgId,
+        // nama: req.body.nama, 
+        // email: req.body.email,
+        // nohp: req.body.nohp,
+        // password: bcrypt.hashSync(req.body.password, 8)
+        
+        {$push: {msg : req.body.msg, msg2: req.body.msg2}}
+    , {new: true})
+    .then(user => {
+        if(!user) {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.msgId
+            });
         }
-    )
+        res.send(user);
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.msgId
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating user with id " + req.params.msgId
+        });
+    });
 };
 
 // Retrieve and return all notes from the database.
@@ -135,6 +150,14 @@ exports.findOneChat = async(req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "detchats",
+                    localField:"detchatid",
+                    foreignField: "_id",
+                    as : "detail",
+                }
+            },
+            {
                 $project :{
                     userid: 0,
                 }
@@ -142,6 +165,11 @@ exports.findOneChat = async(req, res) => {
             {
                 $project :{
                     targetid: 0,
+                }
+            },
+            {
+                $project :{
+                    detchatid: 0,
                 }
             },
             {$sort : {userid: 1,createdAt:-1}},

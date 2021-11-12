@@ -5,7 +5,8 @@ const ChatSchema = mongoose.Schema({
     msg: [String],
     msg2: [String],
     userid: {type: ObjectId, ref:'user.model'},
-    targetid: {type: ObjectId, ref:'user.model'}
+    targetid: {type: ObjectId, ref:'user.model'},
+    detchatid: {type: ObjectId, ref:'detailchat.model'},
 }, {
     timestamps: true
 });

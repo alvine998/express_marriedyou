@@ -43,6 +43,7 @@ global.__basedir = __dirname;
 require('./app/routes/user.routes.js')(app);
 require('./app/routes/chat.routes.js')(app);
 require('./app/routes/images.routes')(app);
+require('./app/routes/detailchat.routes')(app);
 
 const dirname = path.resolve();
 app.use("/resources/upload/", express.static(path.join(dirname, "/resources/upload/")));
